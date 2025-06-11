@@ -1,6 +1,5 @@
 from ase.io.trajectory import Trajectory
 from ase import Atoms
-from ase.geometry import distance,get_distances
 from timer import Timer
 import numpy as np
 
@@ -15,7 +14,7 @@ def bin_sort(atoms,cutoff):
                 bin_num:    3x1 list of number of bins in unit cell'''
     
     ### Initialization ###
-    cell_size = atoms.cell.cellpar()  # unit cell size
+    cell_size = atoms.cell.cellpar()  # unit cell size and angles
     
     ### Create Bins ###
     bin_num = [int(cell_size[0]/(cutoff)),int(cell_size[1]/(cutoff)),int(cell_size[2]/(cutoff))]  # number of bins in each dimension
@@ -43,10 +42,10 @@ def bin_sort(atoms,cutoff):
 
 def bin_cull(index,atom_list,list_index_by_bin,bin_num):
     '''Return list of atom indexes of surrounding grid of index bin
-        Input:  index:      3-D nested list of bins with cooresponding atomic indexes,
-                atom_list:  index of particular atom in Atoms object,
+        Input:  index:      index of particular atom in Atoms object,
+                atom_list:  3-D nested list of bins with cooresponding atomic indexes,
                 list_index_by_bin:       h*k*l nested list of atom indicies by bin coordinate
-                bin_num:    3x1 list of number of bins in unit cell
+                bin_num:    3x1 list of dimensional number  of bins in unit cell
         Output: bin_list:   list of atomic indexes in neighboring bins'''
     
     [x,y,z] = atom_list[index]
@@ -56,15 +55,12 @@ def bin_cull(index,atom_list,list_index_by_bin,bin_num):
     [z0,z1]=[(z-1)%(c), (z+1)%(c)]
     #print([x,y,z], [x0,x1],[y0,y1],[z0,z1])
     bin_list = []
-    for i in [x0,x,x1]:
-        for j in [y0,y,y1]:
-            for k in [z0,z,z1]:
+    for i in np.unique([x0,x,x1]):
+        for j in np.unique([y0,y,y1]):
+            for k in np.unique([z0,z,z1]):
                 #print(i,j,k)
                 for e in list_index_by_bin[i][j][k]:
                     bin_list.append(e)
-
-    if a or b or c < 3:
-        bin_list = np.unique(bin_list)
 
     return bin_list
 
@@ -101,7 +97,7 @@ def main():
 
 
     ### Trajectory file import and setup ###
-    traj_file = 'trajprop-10Acutoff-10A.traj'
+    traj_file = 'data-trajectory-files/trajprop-10Acutoff-10A.traj'
     traj = Trajectory(traj_file)  # read traj file
     atoms = traj[-1]
     cutoff = 10 # Angstroms
@@ -111,7 +107,6 @@ def main():
     print("Bin sorting:")
     time_bin.start()
     list_index_by_bin, atoms_list, bin_num = bin_sort(atoms,cutoff)
-    print(list_index_by_bin)
     time_bin.stop()
 
     print('Atoms, # of bins, atoms/bin')
