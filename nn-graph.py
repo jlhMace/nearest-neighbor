@@ -1,8 +1,15 @@
+##########
+# Code for graphing computational cost comparisons
+##########
+
+
 import seaborn as sns
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import scipy
+
+
 
 
 def plot_graph():

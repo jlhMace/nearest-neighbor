@@ -1,3 +1,0 @@
-- alternative needed for bin_cull() to account for unit cells where dimension of cell in any dimension is less than 3 times the cutoff size.
-        Currently using np.unique() to cull duplicate answers for small/narrow unit cells.
-- 
