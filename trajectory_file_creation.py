@@ -5,7 +5,7 @@ from ase.io.trajectory import Trajectory
 from ase import Atoms, Atom
 from random import uniform
 import numpy as np
-from math import cos,sin,sqrt
+from math import cos,sin,sqrt,pi,radians
 
 
 def create_trajectory(filename,cutoff,a,b,c,alpha=90,beta=90,gamma=90):
@@ -20,14 +20,21 @@ def create_trajectory(filename,cutoff,a,b,c,alpha=90,beta=90,gamma=90):
     bins = int((a*b*c)/pow(cutoff,3))
     print(num,bins,num/bins)
 
+    # Creates Atom object
+    atom_list = Atoms(cell=[a,b,c,alpha,beta,gamma])
+
+    # switch to degrees because ASE hates me
+    alpha = radians(alpha)
+    beta = radians(beta)
+    gamma = radians(gamma)
+
     # Transformation matrix
     cosalp = (cos(beta)*cos(gamma)-cos(alpha))/(sin(beta)*sin(gamma))
     A = np.array([[a,b*cos(gamma),c*cos(beta)],
                 [0,b*sin(gamma),-c*sin(beta)*cosalp],
                 [0,0,c*sin(beta)*sqrt(1-pow(cosalp,2))]])
 
-    # creates list of Atoms objects
-    atom_list = Atoms(cell=[a,b,c,alpha,beta,gamma])
+    # populates Atoms object
     for e in range(num):
         # generates uniform fractional coordinates
         x = uniform(0,1)
