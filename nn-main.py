@@ -74,7 +74,7 @@ def neighbor_list(atoms,atom_index,bin_list,cutoff):
     '''Reads trajectory file and performs nearest neighbor algorithm
         Input:  atoms:          Atoms object of n atoms,
                 atom_index:     index of particular atom in Atoms object,
-                bin_list:       list of 
+                bin_list:       list of atomic indexes in neighboring bins
                 cutoff:         neighbor cutoff in Angstroms
         Output: neighbor_atoms: Atoms object of nearby atoms'''
 
@@ -94,9 +94,27 @@ def neighbor_list(atoms,atom_index,bin_list,cutoff):
     #nl.update(atoms)
     #return nl
 
+def neighbor_list_binless(atoms,atom_index,cutoff):
+    '''Reads trajectory file and performs nearest neighbor algorithm without binning
+        Input:  atoms:          Atoms object of n atoms,
+                atom_index:     index of particular atom in Atoms object,
+                cutoff:         neighbor cutoff in Angstroms
+        Output: neighbor_atoms: Atoms object of nearby atoms'''
+
+    cutoff=cutoff/2
+
+    ### Create Nearest Neighbor list ###
+    neighbor_atoms = Atoms()
+    for index in range(len(atoms)):
+        if atoms.get_distances(index,atom_index)<=cutoff:
+            neighbor_atoms.append(atoms[index])
+
+    #print(len(neighbor_atoms))
+    return neighbor_atoms
 
 
-def main():
+def run_nn(traj_file,outfile=None):
+    '''Runs nn with bins'''
     ### Timing classes for testing ###
     time_total = Timer("total")
     time_bin = Timer("bin")
@@ -104,13 +122,10 @@ def main():
     print("Timing start...")
     time_total.start()
 
-
     ### Trajectory file import and setup ###
-    traj_file = 'data-trajectory-files/uniform_cubic/trajprop-10Acutoff-20A.traj'
     traj = Trajectory(traj_file)  # read traj file
     atoms = traj[-1]
     cutoff = 10 # Angstroms
-
 
     ### Sorting and neighbor list functions ###
     print("Bin sorting:")
@@ -133,11 +148,51 @@ def main():
     print("Total:")
     time_total_dat = time_total.stop()
 
-    # write to csv
-    fields = [len(atoms),bin_num[0]*bin_num[1]*bin_num[2],time_bin_dat,time_nn_dat,time_total_dat]
-    with open('data-graphing/data_cubic_bins.csv','a') as f:
-        writer = csv.writer(f)
-        writer.writerow(fields)
+    if outfile:
+        # write to csv
+        fields = [2,len(atoms),bin_num[0]*bin_num[1]*bin_num[2],time_bin_dat,time_nn_dat,time_total_dat]
+        with open(outfile,'a') as f:
+            writer = csv.writer(f)
+            writer.writerow(fields)
+
+
+def run_nn_binless(traj_file,outfile=None):
+    '''Runs nn without bins'''
+    ### Timing classes for testing ###
+    time_total = Timer("total")
+    time_bin = Timer("bin")
+    time_nn = Timer("nn")
+    print("Timing start...")
+    time_total.start()
+
+    ### Trajectory file import and setup ###
+    traj = Trajectory(traj_file)  # read traj file
+    atoms = traj[-1]
+    cutoff = 10 # Angstroms
+
+    ### Neighbor list functions ###
+    print("Nearest neighbor search:")
+    time_nn.start()
+    for index in range(len(atoms)):
+        neighbor_list_binless(atoms,index,10)  # 10 Angstom cutoff radius
+    time_nn_dat = time_nn.stop()
+
+    print("Total:")
+    time_total_dat = time_total.stop()
+
+    if outfile:
+        # write to csv
+        fields = [1,len(atoms),time_nn_dat,time_total_dat]
+        with open(outfile,'a') as f:
+            writer = csv.writer(f)
+            writer.writerow(fields)
+
+
+
+def main():
+    #run_nn('','')
+    run_nn_binless('data-trajectory-files/uniform_orthorhombic/10Acutoff-flat-40A.traj','data-graphing/orthorhombic_flat_nobin.csv')
+
 
 
 
