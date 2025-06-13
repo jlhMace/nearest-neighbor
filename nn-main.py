@@ -1,20 +1,27 @@
 from ase.io.trajectory import Trajectory
 from ase import Atoms
+from ase.neighborlist import NeighborList
 from timer import Timer
 import numpy as np
+import csv
 
          
 
 def bin_sort(atoms,cutoff):
     '''Sorts atoms into bins based on cutoff
-        Input:  atoms:      Atoms object of n atoms,
-                cutoff:     neighbor cutoff in Angstroms
-        Output: list_index_by_bin:       h*k*l nested list of atomic indexes in each orthagonal bin,
-                atom_list:  list of 3D tuple indicating bin location by atomic index,
-                bin_num:    3x1 list of number of bins in unit cell'''
+        Input:  atoms:              Atoms object of n atoms,
+                cutoff:             neighbor cutoff in Angstroms
+        Output: list_index_by_bin:  h*k*l nested list of atomic indexes in each orthagonal bin,
+                atom_list:          list of 3D tuple indicating bin location by atomic index,
+                bin_num:            3x1 list of number of bins in unit cell'''
     
     ### Initialization ###
     cell_size = atoms.cell.cellpar()  # unit cell size and angles
+
+    ##### 
+
+    ######
+
     
     ### Create Bins ###
     bin_num = [int(cell_size[0]/(cutoff)),int(cell_size[1]/(cutoff)),int(cell_size[2]/(cutoff))]  # number of bins in each dimension
@@ -42,23 +49,21 @@ def bin_sort(atoms,cutoff):
 
 def bin_cull(index,atom_list,list_index_by_bin,bin_num):
     '''Return list of atom indexes of surrounding grid of index bin
-        Input:  index:      index of particular atom in Atoms object,
-                atom_list:  3-D nested list of bins with cooresponding atomic indexes,
-                list_index_by_bin:       h*k*l nested list of atom indicies by bin coordinate
-                bin_num:    3x1 list of dimensional number  of bins in unit cell
-        Output: bin_list:   list of atomic indexes in neighboring bins'''
+        Input:  index:              index of particular atom in Atoms object,
+                atom_list:          3-D nested list of bins with cooresponding atomic indexes,
+                list_index_by_bin:  h*k*l nested list of atom indicies by bin coordinate
+                bin_num:            3x1 list of dimensional number  of bins in unit cell
+        Output: bin_list:           list of atomic indexes in neighboring bins'''
     
     [x,y,z] = atom_list[index]
     [a,b,c] = bin_num
     [x0,x1]=[(x-1)%(a), (x+1)%(a)]
     [y0,y1]=[(y-1)%(b), (y+1)%(b)]
     [z0,z1]=[(z-1)%(c), (z+1)%(c)]
-    #print([x,y,z], [x0,x1],[y0,y1],[z0,z1])
     bin_list = []
     for i in np.unique([x0,x,x1]):
         for j in np.unique([y0,y,y1]):
             for k in np.unique([z0,z,z1]):
-                #print(i,j,k)
                 for e in list_index_by_bin[i][j][k]:
                     bin_list.append(e)
 
@@ -73,7 +78,6 @@ def neighbor_list(atoms,atom_index,bin_list,cutoff):
                 cutoff:         neighbor cutoff in Angstroms
         Output: neighbor_atoms: Atoms object of nearby atoms'''
 
-    #print(len(atoms),len(bin_list))
     cutoff=cutoff/2
 
     ### Create Nearest Neighbor list ###
@@ -84,6 +88,11 @@ def neighbor_list(atoms,atom_index,bin_list,cutoff):
 
     #print(len(neighbor_atoms))
     return neighbor_atoms
+    
+    # From PyAMFF
+    #nl = NeighborList(cutoffs=[cutoff]*len(atoms), sorted=False, self_interaction=False, bothways=True, skin=0.)
+    #nl.update(atoms)
+    #return nl
 
 
 
@@ -97,7 +106,7 @@ def main():
 
 
     ### Trajectory file import and setup ###
-    traj_file = 'data-trajectory-files/trajprop-10Acutoff-10A.traj'
+    traj_file = 'data-trajectory-files/uniform_cubic/trajprop-10Acutoff-20A.traj'
     traj = Trajectory(traj_file)  # read traj file
     atoms = traj[-1]
     cutoff = 10 # Angstroms
@@ -107,7 +116,7 @@ def main():
     print("Bin sorting:")
     time_bin.start()
     list_index_by_bin, atoms_list, bin_num = bin_sort(atoms,cutoff)
-    time_bin.stop()
+    time_bin_dat = time_bin.stop()
 
     print('Atoms, # of bins, atoms/bin')
     n=len(atoms)
@@ -116,14 +125,20 @@ def main():
 
     print("Nearest neighbor search:")
     time_nn.start()
-    #for index in range(len(atoms)):
     for index in range(len(atoms)):
         bin_list = bin_cull(index,atoms_list,list_index_by_bin,bin_num)
         neighbor_list(atoms,index,bin_list,10)  # 10 Angstom cutoff radius
-    time_nn.stop()
+    time_nn_dat = time_nn.stop()
 
     print("Total:")
-    time_total.stop()
+    time_total_dat = time_total.stop()
+
+    # write to csv
+    fields = [len(atoms),bin_num[0]*bin_num[1]*bin_num[2],time_bin_dat,time_nn_dat,time_total_dat]
+    with open('data-graphing/data_cubic_bins.csv','a') as f:
+        writer = csv.writer(f)
+        writer.writerow(fields)
+
 
 
 if __name__=='__main__':
