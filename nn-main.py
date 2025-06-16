@@ -202,6 +202,8 @@ def run_nn_binless(traj_file,outfile=None,width=None):
 
 
 def run_nn_batch(traj_files,outfile,bins: bool,width=None):
+    '''Runs batch of trajectory files and writes nn results to csv. 
+        Appends if output file exists, new file with header if file doesn't exist'''
     
     if width:
         header_bins = 'width,atoms,bins,Bin sort,Nearest neighbor,Total elapsed time'
@@ -210,25 +212,28 @@ def run_nn_batch(traj_files,outfile,bins: bool,width=None):
         header_bins = 'atoms,bins,Bin sort,Nearest neighbor,Total elapsed time'
         header_nobins = 'atoms,Nearest neighbor,Total elapsed time'
 
-    with open(outfile,'w') as f:
-        if bins:
-            f.write(header_bins)
-        else:
-            f.write(header_nobins)
-        f.write('\n')
+    try:
+        f = open(outfile)
+    except FileNotFoundError:
+        with open(outfile,'w') as f:
+            if bins:
+                f.write(header_bins)
+            else:
+                f.write(header_nobins)
+            f.write('\n')
 
     for file in glob.glob(traj_files):
-            if bins:
-                run_nn(file,outfile,width)
-            else:
-                run_nn_binless(file,outfile,width)
+        if bins:
+            run_nn(file,outfile,width)
+        else:
+            run_nn_binless(file,outfile,width)
 
 
 
 def main():
     #run_nn('','')
-    #run_nn_binless('data-trajectory-files/uniform_orthorhombic/10Acutoff-flat-100A.traj','data-graphing/orthorhombic_flat_nobin.csv')
-    run_nn_batch('data-trajectory-files/uniform_orthorhombic/10Acutoff-thin-*.traj','data-graphing/test.csv',True,1)
+    run_nn_binless('data-trajectory-files/uniform_orthorhombic/10Acutoff-flat-150A.traj','data-graphing/orthorhombic_flat_nobin.csv')
+    #run_nn_batch('data-trajectory-files/uniform_orthorhombic/10Acutoff-thin2*.traj','data-graphing/test.csv',True,1)
 
 
 
