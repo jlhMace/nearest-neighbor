@@ -1,9 +1,13 @@
 from ase.io.trajectory import Trajectory
 from ase import Atoms
 from ase.neighborlist import NeighborList
-from timer import Timer
 import numpy as np
+import pandas as pd
+
+# Only necessary for development/testing
+from timer import Timer
 import csv
+import glob
 
          
 
@@ -113,7 +117,7 @@ def neighbor_list_binless(atoms,atom_index,cutoff):
     return neighbor_atoms
 
 
-def run_nn(traj_file,outfile=None):
+def run_nn(traj_file,outfile=None,width=None):
     '''Runs nn with bins'''
     ### Timing classes for testing ###
     time_total = Timer("total")
@@ -150,13 +154,16 @@ def run_nn(traj_file,outfile=None):
 
     if outfile:
         # write to csv
-        fields = [2,len(atoms),bin_num[0]*bin_num[1]*bin_num[2],time_bin_dat,time_nn_dat,time_total_dat]
+        if width:
+            fields = [width,len(atoms),bin_num[0]*bin_num[1]*bin_num[2],time_bin_dat,time_nn_dat,time_total_dat]
+        else:
+            fields = [len(atoms),bin_num[0]*bin_num[1]*bin_num[2],time_bin_dat,time_nn_dat,time_total_dat]
         with open(outfile,'a') as f:
             writer = csv.writer(f)
             writer.writerow(fields)
 
 
-def run_nn_binless(traj_file,outfile=None):
+def run_nn_binless(traj_file,outfile=None,width=None):
     '''Runs nn without bins'''
     ### Timing classes for testing ###
     time_total = Timer("total")
@@ -170,6 +177,9 @@ def run_nn_binless(traj_file,outfile=None):
     atoms = traj[-1]
     cutoff = 10 # Angstroms
 
+    n=len(atoms)
+    print('Atoms:',n)
+
     ### Neighbor list functions ###
     print("Nearest neighbor search:")
     time_nn.start()
@@ -182,16 +192,43 @@ def run_nn_binless(traj_file,outfile=None):
 
     if outfile:
         # write to csv
-        fields = [1,len(atoms),time_nn_dat,time_total_dat]
+        if width:
+            fields = [1,len(atoms),time_nn_dat,time_total_dat]
+        else:
+            fields = [len(atoms),time_nn_dat,time_total_dat]
         with open(outfile,'a') as f:
             writer = csv.writer(f)
             writer.writerow(fields)
 
 
+def run_nn_batch(traj_files,outfile,bins: bool,width=None):
+    
+    if width:
+        header_bins = 'width,atoms,bins,Bin sort,Nearest neighbor,Total elapsed time'
+        header_nobins = 'width,atoms,Nearest neighbor,Total elapsed time'
+    else:
+        header_bins = 'atoms,bins,Bin sort,Nearest neighbor,Total elapsed time'
+        header_nobins = 'atoms,Nearest neighbor,Total elapsed time'
+
+    with open(outfile,'w') as f:
+        if bins:
+            f.write(header_bins)
+        else:
+            f.write(header_nobins)
+        f.write('\n')
+
+    for file in glob.glob(traj_files):
+            if bins:
+                run_nn(file,outfile,width)
+            else:
+                run_nn_binless(file,outfile,width)
+
+
 
 def main():
     #run_nn('','')
-    run_nn_binless('data-trajectory-files/uniform_orthorhombic/10Acutoff-flat-40A.traj','data-graphing/orthorhombic_flat_nobin.csv')
+    #run_nn_binless('data-trajectory-files/uniform_orthorhombic/10Acutoff-flat-100A.traj','data-graphing/orthorhombic_flat_nobin.csv')
+    run_nn_batch('data-trajectory-files/uniform_orthorhombic/10Acutoff-thin-*.traj','data-graphing/test.csv',True,1)
 
 
 
