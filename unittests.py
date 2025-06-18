@@ -1,7 +1,8 @@
-import unittest
 import io
 import os
+import unittest
 #import nn_main as nn
+from ase.io import Trajectory
 import re
 
 
@@ -30,7 +31,7 @@ class TestReferenceFiles():
             yield self.check_file_exists, e
 
 
-class TestBinAccuracy(unittest.TestCase):
+class TestBinAccuracy():
 
     def setUp(self):
         pass
