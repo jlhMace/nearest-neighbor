@@ -1,27 +1,38 @@
 import nn_main as nn
-import json
+import pickle
+from ase.neighborlist import NeighborList, build_neighbor_list, get_connectivity_matrix
+from ase.io import Trajectory
 
 
 def create_reference(trajfile,outfile):
     '''Creates neighborlist file for nearest neighbors of each atom of a trajectory using binless nearest neighbor.'''
 
-    with open(outfile,'w') as f:
-        neighborlist = nn.run_nn_binless(trajfile)
-        json.dump(neighborlist,f,indent=2)
+    with open(outfile,'wb') as f:
+        cutoff = 10/2
+        atoms = Trajectory(trajfile)[-1]
+        nl = build_neighbor_list(atoms, cutoffs=[cutoff]*len(atoms), sorted=False, self_interaction=False, bothways=True, skin=0.)
+        matrix = nl.get_connectivity_matrix()
+        print(type(matrix))
+        pickle.dump(matrix,f)
 
 def create_neighborlist(trajfile,outfile):
     '''Creates neighborlist file for nearest neighbors of each atom of a trajectory using binless nearest neighbor.'''
 
     with open(outfile,'w') as f:
-        neighborlist = nn.run_nn(trajfile)
-        json.dump(neighborlist,f,indent=2)
+        cutoff = 10/2
+        atoms = Trajectory(trajfile)[-1]
+        nl = nn.run_nn(trajfile)
+        matrix = nl.get_connectivity_matrix()
+        print(type(matrix))
+        pickle.dump(matrix,f)
 
 
 def main():
-    trajfile = 'data-trajectory-files/uniform_cubic/trajprop-10Acutoff-10A.traj'
-    outfile = 'data-testing/uniform_cubic_10A.json'
-    create_reference(trajfile,str(outfile+'.json'))
-    create_neighborlist(trajfile,str(outfile+'_bintest.json'))
+    trajfile = 'data-testing/10Acutoff-thin-40A.traj'
+    outfile = 'data-testing/10Acutoff-thin-40A.pkl'
+    outtest = 'data-testing/10Acutoff-thin-40A_test.pkl'
+    create_reference(trajfile,outfile)
+    #create_neighborlist(trajfile,outtest)
 
 
 if __name__=='__main__':
