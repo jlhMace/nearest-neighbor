@@ -2,6 +2,7 @@ import nn_main as nn
 import pickle
 from ase.neighborlist import NeighborList, build_neighbor_list, get_connectivity_matrix
 from ase.io import Trajectory
+import filecmp
 
 
 def create_reference(trajfile,outfile):
@@ -25,6 +26,10 @@ def create_neighborlist(trajfile,outfile):
         matrix = nl.get_connectivity_matrix()
         print(type(matrix))
         pickle.dump(matrix,f)
+
+def compare_files(f1,f2):
+    '''Compares two files using filecmp. True if contents are the same, False if different.'''
+    return filecmp(f1,f2,shallow=False)
 
 
 def main():
