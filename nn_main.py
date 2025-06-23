@@ -1,6 +1,6 @@
 from ase.io.trajectory import Trajectory
 from ase import Atoms
-from ase.neighborlist import NeighborList
+from ase.neighborlist import NeighborList, build_neighbor_list
 import numpy as np
 import pandas as pd
 
@@ -22,11 +22,6 @@ def bin_sort(atoms,cutoff):
     ### Initialization ###
     cell_size = atoms.cell.cellpar()  # unit cell size and angles
 
-    ##### 
-
-    ######
-
-    
     ### Create Bins ###
     bin_num = [int(cell_size[0]/(cutoff)),int(cell_size[1]/(cutoff)),int(cell_size[2]/(cutoff))]  # number of bins in each dimension
     bin_dim = (cell_size[0]/bin_num[0],cell_size[1]/bin_num[1],cell_size[2]/bin_num[2])  # size of each bin
@@ -51,7 +46,7 @@ def bin_sort(atoms,cutoff):
     return list_index_by_bin, atom_list, bin_num
 
 
-def bin_cull(index,atom_list,list_index_by_bin,bin_num):
+def bin_cull(index,atoms,atom_list,list_index_by_bin,bin_num):
     '''Return list of atom indexes of surrounding grid of index bin
         Input:  index:              index of particular atom in Atoms object,
                 atom_list:          3-D nested list of bins with cooresponding atomic indexes,
@@ -64,14 +59,16 @@ def bin_cull(index,atom_list,list_index_by_bin,bin_num):
     [x0,x1]=[(x-1)%(a), (x+1)%(a)]
     [y0,y1]=[(y-1)%(b), (y+1)%(b)]
     [z0,z1]=[(z-1)%(c), (z+1)%(c)]
-    bin_list = []
+    bin_nlist = Atoms(cell=atoms.cell.cellpar(),pbc=True)
+    #bin_nlist = []
     for i in np.unique([x0,x,x1]):
         for j in np.unique([y0,y,y1]):
             for k in np.unique([z0,z,z1]):
                 for e in list_index_by_bin[i][j][k]:
-                    bin_list.append(e)
+                    new_atom = atoms[e]
+                    bin_nlist = bin_nlist + new_atom
 
-    return bin_list
+    return bin_nlist
 
 
 def neighbor_list(atoms,atom_index,bin_list,cutoff):
@@ -85,18 +82,19 @@ def neighbor_list(atoms,atom_index,bin_list,cutoff):
     cutoff=cutoff/2
 
     ### Create Nearest Neighbor list ###
-    neighbor_atoms = Atoms()
-    for index in bin_list:
-        if atoms.get_distances(index,atom_index)<=cutoff:
-            neighbor_atoms.append(atoms[index])
+    #neighbor_atoms = Atoms()
+    #for index in bin_list:
+    #    if atoms.get_distances(index,atom_index)<=cutoff:
+    #        neighbor_atoms.append(atoms[index])
 
     #print(len(neighbor_atoms))
-    return neighbor_atoms
+    #return neighbor_atoms
     
     # From PyAMFF
-    #nl = NeighborList(cutoffs=[cutoff]*len(atoms), sorted=False, self_interaction=False, bothways=True, skin=0.)
-    #nl.update(atoms)
-    #return nl
+    nl = build_neighbor_list(atoms,cutoffs=[cutoff]*len(atoms), sorted=False, self_interaction=False, bothways=True, skin=0.)
+    nl.update(atoms)
+    indices,offsets = nl.get_neighbors(atom_index)
+    return indices, offsets
 
 def neighbor_list_binless(atoms,atom_index,cutoff):
     '''Reads trajectory file and performs nearest neighbor algorithm without binning
@@ -234,7 +232,13 @@ def run_nn_batch(traj_files,outfile,bins: bool,width=None):
 def main():
     #run_nn('','')
     #run_nn_binless('data-trajectory-files/uniform_orthorhombic/10Acutoff-thin-30A.traj','data-graphing/orthorhombic_thin_nobin.csv',1)
-    run_nn_batch('data-trajectory-files/uniform_orthorhombic/10Acutoff-thin2-*.traj','data-graphing/orthorhombic_thin_nobin.csv',False,2)
+    #run_nn_batch('data-trajectory-files/uniform_orthorhombic/10Acutoff-thin2-*.traj','data-graphing/orthorhombic_thin_nobin.csv',False,2)
+
+    traj = Trajectory('data-testing/10Acutoff-cubic-10A.traj')  # read traj file
+    atoms = traj[-1]
+    cutoff = 10 # Angstroms
+
+    list_index_by_bin, atom_list, bin_num = bin_sort(atoms,cutoff)
 
 
 
