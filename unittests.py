@@ -5,6 +5,7 @@ import unittest
 from ase.io import Trajectory
 import re
 from comparetest import create_neighborlist, create_reference, compare_files
+from nose.tools import with_setup
 
 
 class TestReferenceFiles():
@@ -42,10 +43,9 @@ class TestBinAccuracy():
         for file in os.listdir(self.directory):
             filename = os.fsdecode(file)
             if filename.endswith('.traj'):
-                filelist.append(filename)
+                filelist.append(self.directory + '/' + filename)
         return filelist
     
-    #@unittest.skip('Work in progress, remove skip when nn_main is fixed.')
     def setUp(self):
         filelist = self.file_list()
         for trajfile in filelist:
@@ -53,15 +53,18 @@ class TestBinAccuracy():
             outfile = re.sub('.traj','_test.pkl',trajfile)
             create_neighborlist(trajfile,outfile)
 
-    def compare_output(self,f1,f2):
-        compare_files(f1,f2)
-
     def test_gen_file_compare(self):
         filelist = self.file_list()
         for e in filelist:
             f1 = re.sub('.traj','.pkl',e)
-            f2 = re.sub('.pkl','_test.pkl',e)
+            f2 = re.sub('.pkl','_test.pkl',f1)
+            print(f1,f2,self.compare_output(f1,f2)==True)
             yield self.compare_output, f1, f2
+
+    def compare_output(self,f1,f2):
+        compare_files(f1,f2)
+
+    
             
 
 
