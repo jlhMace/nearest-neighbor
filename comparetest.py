@@ -1,10 +1,9 @@
 import nn_main as nn
 import pickle
-from ase.neighborlist import NeighborList, build_neighbor_list, get_connectivity_matrix
+from ase.neighborlist import build_neighbor_list
 from ase.io import Trajectory
 import filecmp
 import numpy as np
-import json
 
 
 def create_reference(trajfile,outfile):
@@ -25,7 +24,7 @@ def create_reference(trajfile,outfile):
             nlist[i].append(np.sort(indices))
             offlist[i].append(offsets)
 
-        print(nlist)
+        print(nlist[0])
         pickle.dump(nlist,f)
 
 def create_neighborlist(trajfile,outfile):
@@ -56,12 +55,15 @@ def compare_files(f1,f2):
 
 
 def main():
-    trajfile = 'data-testing/10Acutoff-cubic-40A.traj'
-    outfile = 'data-testing/10Acutoff-cubic-40A.pkl'
-    outtest = 'data-testing/10Acutoff-cubic-40A_test.pkl'
+    trajfile = 'data-testing/10Acutoff-thin-30A.traj'
+    outfile = 'data-testing/10Acutoff-thin-30A.pkl'
+    outtest = 'data-testing/10Acutoff-thin-30A_test.pkl'
     create_reference(trajfile,outfile)
+    print('reference ^^')
     create_neighborlist(trajfile,outtest)
+    print('nlist ^^')
     print(compare_files(outfile,outtest))
+    print('Done')
 
 
 if __name__=='__main__':
