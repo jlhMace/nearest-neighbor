@@ -4,6 +4,7 @@ from ase.neighborlist import build_neighbor_list
 from ase.io import Trajectory
 import filecmp
 import numpy as np
+import pandas as pd
 
 
 def create_reference(trajfile,outfile):
@@ -53,17 +54,24 @@ def compare_files(f1,f2):
     '''Compares two files using filecmp. True if contents are the same, False if different.'''
     return filecmp.cmp(f1,f2,shallow=False)
 
+def view_pickle(file1,file2):
+    f1 = pd.read_pickle(file1)
+    f2 = pd.read_pickle(file2)
+    print(f1[2])
+    print(f2[2])
+
 
 def main():
     trajfile = 'data-testing/10Acutoff-thin-30A.traj'
     outfile = 'data-testing/10Acutoff-thin-30A.pkl'
     outtest = 'data-testing/10Acutoff-thin-30A_test.pkl'
-    create_reference(trajfile,outfile)
-    print('reference ^^')
-    create_neighborlist(trajfile,outtest)
-    print('nlist ^^')
-    print(compare_files(outfile,outtest))
-    print('Done')
+    #create_reference(trajfile,outfile)
+    #print('reference ^^')
+    #create_neighborlist(trajfile,outtest)
+    #print('nlist ^^')
+    #print(compare_files(outfile,outtest))
+    #print('Done')
+    view_pickle('data-testing/10Acutoff-cubic-10A.pkl','data-testing/10Acutoff-cubic-10A_test.pkl')
 
 
 if __name__=='__main__':
