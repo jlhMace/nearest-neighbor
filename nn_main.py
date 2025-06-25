@@ -96,24 +96,6 @@ def neighbor_list(atoms,atom_index,bin_nlist,cutoff):
     indices,offsets = nl.get_neighbors(atom_index)
     return indices, offsets
 
-def neighbor_list_binless(atoms,atom_index,cutoff):
-    '''Reads trajectory file and performs nearest neighbor algorithm without binning
-        Input:  atoms:          Atoms object of n atoms,
-                atom_index:     index of particular atom in Atoms object,
-                cutoff:         neighbor cutoff in Angstroms
-        Output: neighbor_atoms: Atoms object of nearby atoms'''
-
-    cutoff=cutoff/2
-
-    ### Create Nearest Neighbor list ###
-    #neighbor_atoms = Atoms()
-    #for index in range(len(atoms)):
-    #    if atoms.get_distances(index,atom_index)<=cutoff:
-    #        neighbor_atoms.append(atoms[index])
-
-    #print(len(neighbor_atoms))
-    #return neighbor_atoms
-
 
 def run_nn(traj_file,outfile=None,width=None):
     '''Runs nn with bins'''
@@ -182,7 +164,7 @@ def run_nn_binless(traj_file,outfile=None,width=None):
     print("Nearest neighbor search:")
     time_nn.start()
     for index in range(len(atoms)):
-        neighbor_list_binless(atoms,index,10)  # 10 Angstom cutoff radius
+        neighbor_list(atoms,index,None,10)  # 10 Angstom cutoff radius
     time_nn_dat = time_nn.stop()
 
     print("Total:")
@@ -233,13 +215,7 @@ def main():
     #run_nn('','')
     #run_nn_binless('data-trajectory-files/uniform_orthorhombic/10Acutoff-thin-30A.traj','data-graphing/orthorhombic_thin_nobin.csv',1)
     #run_nn_batch('data-trajectory-files/uniform_orthorhombic/10Acutoff-thin2-*.traj','data-graphing/orthorhombic_thin_nobin.csv',False,2)
-
-    traj = Trajectory('data-testing/10Acutoff-cubic-10A.traj')  # read traj file
-    atoms = traj[-1]
-    cutoff = 10 # Angstroms
-
-    list_index_by_bin, atom_list, bin_num = bin_sort(atoms,cutoff)
-
+    pass
 
 
 
