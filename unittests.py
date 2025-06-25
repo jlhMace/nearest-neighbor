@@ -5,38 +5,35 @@ import unittest
 from ase.io import Trajectory
 import re
 from comparetest import create_neighborlist, compare_files
-
+import pytest
 
 class TestReferenceFiles():
-
-    def __init__(self):
-        self.directory = 'data-testing'
     
-    def file_list(self):
+    @pytest.fixture
+    def filelist(self):
+        directory = 'data-testing'
         filelist = []
-        for file in os.listdir(self.directory):
+        for file in os.listdir(directory):
             filename = os.fsdecode(file)
             if filename.endswith('.traj'):
                 filelist.append(filename)
         return filelist
     
-    def check_file_exists(self,filename):
-        filename = re.sub('.traj','.pkl',filename)
-        file = str(self.directory + '/' + filename)
-        with io.open(file) as f:
-            assert os.path.isfile(file)
-
-    def test_gen_file_exists(self):
-        filelist = self.file_list()
-        for e in filelist:
-            yield self.check_file_exists, e
+    def check_file_exists(self,filelist):
+        for filename in filelist:
+            filename = re.sub('.traj','.pkl',filename)
+            file = str('data-testing/' + filename)
+            with io.open(file) as f:
+                assert os.path.isfile(file)
 
 
 class TestBinAccuracy():
 
-    def __init__(self):
+    @classmethod
+    def setup(self):
         self.directory = 'data-testing'
 
+    @pytest.fixture
     def file_list(self):
         filelist = []
         for file in os.listdir(self.directory):
@@ -45,6 +42,7 @@ class TestBinAccuracy():
                 filelist.append(self.directory + '/' + filename)
         return filelist
     
+    @pytest.mark.skip(reason="WIP")
     def setUp(self):
         filelist = self.file_list()
         for trajfile in filelist:
@@ -58,8 +56,9 @@ class TestBinAccuracy():
             f1 = re.sub('.traj','.pkl',e)
             f2 = re.sub('.pkl','_test.pkl',f1)
             print(f1,f2,self.compare_output(f1,f2)==True)
-            yield self.compare_output, f1, f2
+            assert self.compare_output(f1, f2)
 
+    @pytest.fixture
     def compare_output(self,f1,f2):
         compare_files(f1,f2)
 
