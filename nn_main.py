@@ -64,17 +64,17 @@ def bin_cull(index,atoms,atom_list,list_index_by_bin,bin_num):
     [z0,z1]=[(z-1)%(c), (z+1)%(c)]
     bin_nlist = Atoms(cell=atoms.cell.cellpar(),pbc=True)
     pointers = {}
-    index = 0
+    counter = 0
+    print(x0,x,x1,y0,y,y1,z0,z,z1)
     for i in np.unique([x0,x,x1]):
         for j in np.unique([y0,y,y1]):
             for k in np.unique([z0,z,z1]):
                 for e in list_index_by_bin[i][j][k]:
                     new_atom = atoms[e]
                     bin_nlist = bin_nlist + new_atom
-                    pointers[bin_nlist[index].index] = e
-                    index+=1
+                    pointers[e] = bin_nlist[counter].index
+                    counter+=1
 
-    print(pointers)
     return bin_nlist, pointers
 
 
@@ -98,8 +98,14 @@ def neighbor_list(atoms,atom_index,cutoff,bin_nlist,pointers):
     #return neighbor_atoms
     
     # From PyAMFF
-    nl = build_neighbor_list(bin_nlist,cutoffs=[cutoff]*len(bin_nlist), sorted=False, self_interaction=False, bothways=True, skin=0.)
+    nl = build_neighbor_list(bin_nlist,cutoffs=[cutoff]*len(bin_nlist), sorted=False, self_interaction=True, bothways=True, skin=0.)
     indices, offsets = nl.get_neighbors(atom_index)
+
+    if pointers:
+        for i in indices:
+            j = pointers.get(i)
+            i=j
+
     return indices, offsets
 
 
