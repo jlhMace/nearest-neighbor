@@ -54,7 +54,8 @@ def bin_cull(index,atoms,atom_list,list_index_by_bin,bin_num):
                 atom_list:          3-D nested list of bins with cooresponding atomic indexes,
                 list_index_by_bin:  h*k*l nested list of atom indicies by bin coordinate
                 bin_num:            3x1 list of dimensional number  of bins in unit cell
-        Output: bin_list:           list of atomic indexes in neighboring bins'''
+        Output: bin_list:           list of atomic indexes in neighboring bins
+                pointers:           dict of bin_nlist[index]:atoms[index] key pairs'''
     
     [x,y,z] = atom_list[index]
     [a,b,c] = bin_num
@@ -62,26 +63,32 @@ def bin_cull(index,atoms,atom_list,list_index_by_bin,bin_num):
     [y0,y1]=[(y-1)%(b), (y+1)%(b)]
     [z0,z1]=[(z-1)%(c), (z+1)%(c)]
     bin_nlist = Atoms(cell=atoms.cell.cellpar(),pbc=True)
-    #bin_nlist = []
+    pointers = {}
+    index = 0
     for i in np.unique([x0,x,x1]):
         for j in np.unique([y0,y,y1]):
             for k in np.unique([z0,z,z1]):
                 for e in list_index_by_bin[i][j][k]:
                     new_atom = atoms[e]
                     bin_nlist = bin_nlist + new_atom
+                    pointers[bin_nlist[index].index] = e
+                    index+=1
 
-    return bin_nlist
+    print(pointers)
+    return bin_nlist, pointers
 
 
-def neighbor_list(atoms,atom_index,bin_nlist,cutoff):
+def neighbor_list(atoms,atom_index,cutoff,bin_nlist,pointers):
     '''Reads trajectory file and performs nearest neighbor algorithm
         Input:  atoms:          Atoms object of n atoms,
                 atom_index:     index of particular atom in Atoms object,
-                bin_list:       list of atomic indexes in neighboring bins
+                bin_nlist:       list of atomic indexes in neighboring bins
                 cutoff:         neighbor cutoff in Angstroms
         Output: neighbor_atoms: Atoms object of nearby atoms'''
 
     cutoff=cutoff/2
+    if bin_nlist == None:
+        bin_nlist = atoms   # for binless
 
     ### Create Nearest Neighbor list ###
     #neighbor_atoms = Atoms()
@@ -91,9 +98,8 @@ def neighbor_list(atoms,atom_index,bin_nlist,cutoff):
     #return neighbor_atoms
     
     # From PyAMFF
-    nl = build_neighbor_list(atoms,cutoffs=[cutoff]*len(atoms), sorted=False, self_interaction=False, bothways=True, skin=0.)
-    nl.update(atoms)
-    indices,offsets = nl.get_neighbors(atom_index)
+    nl = build_neighbor_list(bin_nlist,cutoffs=[cutoff]*len(bin_nlist), sorted=False, self_interaction=False, bothways=True, skin=0.)
+    indices, offsets = nl.get_neighbors(atom_index)
     return indices, offsets
 
 
