@@ -57,8 +57,8 @@ def compare_files(f1,f2):
 def view_pickle(file1,file2):
     f1 = pd.read_pickle(file1)
     f2 = pd.read_pickle(file2)
-    print(f1[2])
-    print(f2[2])
+    print(f1[100])
+    print(f2[100])
 
 
 def main():
@@ -71,7 +71,8 @@ def main():
     #print('nlist ^^')
     #print(compare_files(outfile,outtest))
     #print('Done')
-    view_pickle('data-testing/10Acutoff-cubic-10A.pkl','data-testing/10Acutoff-cubic-10A_test.pkl')
+    #view_pickle('data-testing/10Acutoff-cubic-10A.pkl','data-testing/10Acutoff-cubic-10A_test.pkl')
+    view_pickle('data-testing/10Acutoff-thin-30A.pkl','data-testing/10Acutoff-thin-30A_test.pkl')
 
 
 if __name__=='__main__':

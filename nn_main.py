@@ -8,6 +8,7 @@ import pandas as pd
 from timer import Timer
 import csv
 import glob
+from ase.visualize import view
 
          
 
@@ -49,6 +50,7 @@ def bin_sort(atoms,cutoff):
 def bin_cull(index,atoms,atom_list,list_index_by_bin,bin_num):
     '''Return list of atom indexes of surrounding grid of index bin
         Input:  index:              index of particular atom in Atoms object,
+                atoms:              Atoms object of full system
                 atom_list:          3-D nested list of bins with cooresponding atomic indexes,
                 list_index_by_bin:  h*k*l nested list of atom indicies by bin coordinate
                 bin_num:            3x1 list of dimensional number  of bins in unit cell
@@ -71,7 +73,7 @@ def bin_cull(index,atoms,atom_list,list_index_by_bin,bin_num):
     return bin_nlist
 
 
-def neighbor_list(atoms,atom_index,bin_list,cutoff):
+def neighbor_list(atoms,atom_index,bin_nlist,cutoff):
     '''Reads trajectory file and performs nearest neighbor algorithm
         Input:  atoms:          Atoms object of n atoms,
                 atom_index:     index of particular atom in Atoms object,
@@ -83,11 +85,9 @@ def neighbor_list(atoms,atom_index,bin_list,cutoff):
 
     ### Create Nearest Neighbor list ###
     #neighbor_atoms = Atoms()
-    #for index in bin_list:
-    #    if atoms.get_distances(index,atom_index)<=cutoff:
-    #        neighbor_atoms.append(atoms[index])
-
-    #print(len(neighbor_atoms))
+    #for i in range(len(bin_nlist)):
+    #    if bin_nlist.get_distance(i,atom_index)<=cutoff:
+    #        neighbor_atoms.append(atoms[i])
     #return neighbor_atoms
     
     # From PyAMFF
@@ -106,13 +106,13 @@ def neighbor_list_binless(atoms,atom_index,cutoff):
     cutoff=cutoff/2
 
     ### Create Nearest Neighbor list ###
-    neighbor_atoms = Atoms()
-    for index in range(len(atoms)):
-        if atoms.get_distances(index,atom_index)<=cutoff:
-            neighbor_atoms.append(atoms[index])
+    #neighbor_atoms = Atoms()
+    #for index in range(len(atoms)):
+    #    if atoms.get_distances(index,atom_index)<=cutoff:
+    #        neighbor_atoms.append(atoms[index])
 
     #print(len(neighbor_atoms))
-    return neighbor_atoms
+    #return neighbor_atoms
 
 
 def run_nn(traj_file,outfile=None,width=None):
