@@ -16,7 +16,7 @@ def create_trajectory(filename,cutoff,a,b,c,alpha=90,beta=90,gamma=90):
 
     # parameters and density check
     element = 'H'
-    num = int((a*b*c)*50/pow(cutoff,3))    # number of total atoms
+    num = int((a*b*c)*10/pow(cutoff,3))    # number of total atoms
     bins = int((a*b*c)/pow(cutoff,3))
     print(num,bins,num/bins)
 
@@ -49,9 +49,20 @@ def create_trajectory(filename,cutoff,a,b,c,alpha=90,beta=90,gamma=90):
     traj.write(atom_list)
     traj.close()
 
+
+def create_custom(filename):
+    '''Creates a manually defined system'''
+
+    n=40-39.46785238
+    atomsys = Atoms('LiHH', positions=[(13.10486985, 15.95092176, 9.01085498), (15.23491011, 16.41032859, -n), (15.23491011, 16.41032859, 39.46785238)], pbc=True, cell=[40.0, 40.0, 40.0])
+
+    traj = Trajectory(f'{filename}', 'w', atoms=atomsys)
+    traj.write(atomsys)
+    traj.close()
+
 def main():
-    #create_trajectory('test2',10,100,100,100,90,90,70)
-    pass
+    #create_trajectory('test2',10,100,100,100,90,90,90)
+    create_custom('test2')
 
 
 if __name__=='__main__':
