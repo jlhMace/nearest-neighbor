@@ -65,20 +65,26 @@ def bin_cull(index,atoms,atom_list,list_index_by_bin,bin_num):
     bin_nlist = Atoms(cell=atoms.cell.cellpar(),pbc=True)
     pointers = {}
     counter = 0
-    print(x0,x,x1,y0,y,y1,z0,z,z1)
+    #print(x0,x,x1,y0,y,y1,z0,z,z1)
     for i in np.unique([x0,x,x1]):
         for j in np.unique([y0,y,y1]):
             for k in np.unique([z0,z,z1]):
                 for e in list_index_by_bin[i][j][k]:
                     new_atom = atoms[e]
                     bin_nlist = bin_nlist + new_atom
-                    pointers[e] = bin_nlist[counter].index
+                    pointers[bin_nlist[counter].index] = e
+                    if e==index:
+                        print(f'{bin_nlist[counter].index}, {e}')
                     counter+=1
-
+    
+    #print(bin_nlist[1398])
+    #print(bin_nlist[1398].index)
+    #print(pointers[1398])
+    #print(atoms[pointers[1398]])
     return bin_nlist, pointers
 
 
-def neighbor_list(atoms,atom_index,cutoff,bin_nlist,pointers):
+def neighbor_list(atoms,index,cutoff,bin_nlist,pointers):
     '''Reads trajectory file and performs nearest neighbor algorithm
         Input:  atoms:          Atoms object of n atoms,
                 atom_index:     index of particular atom in Atoms object,
@@ -90,21 +96,23 @@ def neighbor_list(atoms,atom_index,cutoff,bin_nlist,pointers):
     if bin_nlist == None:
         bin_nlist = atoms   # for binless
 
-    ### Create Nearest Neighbor list ###
-    #neighbor_atoms = Atoms()
-    #for i in range(len(bin_nlist)):
-    #    if bin_nlist.get_distance(i,atom_index)<=cutoff:
-    #        neighbor_atoms.append(atoms[i])
-    #return neighbor_atoms
-    
-    # From PyAMFF
-    nl = build_neighbor_list(bin_nlist,cutoffs=[cutoff]*len(bin_nlist), sorted=False, self_interaction=True, bothways=True, skin=0.)
-    indices, offsets = nl.get_neighbors(atom_index)
-
+    # atoms[index] => bin_nlist[index]
     if pointers:
-        for i in indices:
-            j = pointers.get(i)
-            i=j
+        for key in pointers.keys():
+            if pointers[key] == index:
+                index = key
+                break
+
+        
+    # Build neighbor list, then reassign indices
+    nl = build_neighbor_list(bin_nlist,cutoffs=[cutoff]*len(bin_nlist), sorted=False, self_interaction=False, bothways=True, skin=0.)
+    if pointers:
+        #print(index,pointers[index])
+        indices, offsets = nl.get_neighbors(index)
+        for i, n in enumerate(indices): # where i is the index, n is each number
+            indices[i] = pointers[bin_nlist[n].index]
+    else:
+        indices, offsets = nl.get_neighbors(index)  # for binless
 
     return indices, offsets
 
