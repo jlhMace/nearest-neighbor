@@ -77,10 +77,6 @@ def bin_cull(index,atoms,atom_list,list_index_by_bin,bin_num):
                         print(f'{bin_nlist[counter].index}, {e}')
                     counter+=1
     
-    #print(bin_nlist[1398])
-    #print(bin_nlist[1398].index)
-    #print(pointers[1398])
-    #print(atoms[pointers[1398]])
     return bin_nlist, pointers
 
 
@@ -102,14 +98,13 @@ def neighbor_list(atoms,index,cutoff,bin_nlist,pointers):
             if pointers[key] == index:
                 index = key
                 break
-
         
     # Build neighbor list, then reassign indices
     nl = build_neighbor_list(bin_nlist,cutoffs=[cutoff]*len(bin_nlist), sorted=False, self_interaction=False, bothways=True, skin=0.)
     if pointers:
         #print(index,pointers[index])
         indices, offsets = nl.get_neighbors(index)
-        for i, n in enumerate(indices): # where i is the index, n is each number
+        for i, n in enumerate(indices): # where i is the index, n is each value
             indices[i] = pointers[bin_nlist[n].index]
     else:
         indices, offsets = nl.get_neighbors(index)  # for binless
