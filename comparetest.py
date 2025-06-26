@@ -42,8 +42,8 @@ def create_neighborlist(trajfile,outfile):
             
         list_index_by_bin, atoms_list, bin_num = nn.bin_sort(atoms,cutoff)
         for i in range(0,len(atoms)):
-            bin_list = nn.bin_cull(i,atoms,atoms_list,list_index_by_bin,bin_num)
-            indices, offsets = nn.neighbor_list(bin_list,i,None,cutoff)
+            bin_nlist,pointers = nn.bin_cull(i,atoms,atoms_list,list_index_by_bin,bin_num)
+            indices, offsets = nn.neighbor_list(bin_nlist,i,cutoff,bin_nlist,pointers)
             nlist[i].append(np.sort(indices))
             offlist[i].append(offsets)
 
