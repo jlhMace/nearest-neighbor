@@ -61,10 +61,27 @@ def view_pickle(file1,file2):
     print(f2[100])
 
 
+def compare_nlist(trajfile):
+    cutoff = 10
+    atoms = Trajectory(trajfile)[-1]
+
+    nlist_b, offlist_b = nn.run_nn(trajfile)
+    nlist_nb, offlist_nb = nn.run_nn_binless(trajfile)
+
+    for i in range(len(nlist_b)):
+        differ = list(set(nlist_b[i]).difference(nlist_nb[i]))
+        if np.size(differ)!=0:
+            print(f'At index {i}: {differ}')
+
+
+
+
+
+
 def main():
-    trajfile = 'data-testing/10Acutoff-thin-30A.traj'
-    outfile = 'data-testing/10Acutoff-thin-30A.pkl'
-    outtest = 'data-testing/10Acutoff-thin-30A_test.pkl'
+    trajfile = 'data-trajectory-files/uniform_cubic/trajprop-10Acutoff-20A.traj'
+    outfile = 'data-testing/10Acutoff-thin-20A.pkl'
+    outtest = 'data-testing/10Acutoff-thin-20A_test.pkl'
     #create_reference(trajfile,outfile)
     #print('reference ^^')
     #create_neighborlist(trajfile,outtest)
@@ -72,7 +89,8 @@ def main():
     #print(compare_files(outfile,outtest))
     #print('Done')
     #view_pickle('data-testing/10Acutoff-cubic-10A.pkl','data-testing/10Acutoff-cubic-10A_test.pkl')
-    view_pickle('data-testing/10Acutoff-thin-30A.pkl','data-testing/10Acutoff-thin-30A_test.pkl')
+    #view_pickle('data-testing/10Acutoff-thin-30A.pkl','data-testing/10Acutoff-thin-30A_test.pkl')
+    compare_nlist(trajfile)
 
 
 if __name__=='__main__':
