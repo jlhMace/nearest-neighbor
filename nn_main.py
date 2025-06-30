@@ -73,8 +73,8 @@ def bin_cull(index,atoms,atom_list,list_index_by_bin,bin_num):
                     new_atom = atoms[e]
                     bin_nlist = bin_nlist + new_atom
                     pointers[bin_nlist[counter].index] = e
-                    if e==index:
-                        print(f'{bin_nlist[counter].index}, {e}')
+                    #if e==index:
+                        #print(f'{bin_nlist[counter].index}, {e}')
                     counter+=1
     
     return bin_nlist, pointers
@@ -139,9 +139,17 @@ def run_nn(traj_file,outfile=None,width=None):
 
     print("Nearest neighbor search:")
     time_nn.start()
+    nlist = []
+    offlist = []
+    for i in range(len(atoms)):
+        nlist.append([])
+        offlist.append([])
+
     for index in range(len(atoms)):
-        bin_list = bin_cull(index,atoms_list,list_index_by_bin,bin_num)
-        neighbor_list(atoms,index,bin_list,10)  # 10 Angstom cutoff radius
+        bin_list, pointers = bin_cull(index,atoms,atoms_list,list_index_by_bin,bin_num)
+        indices, offsets = neighbor_list(atoms,index,10,bin_list,pointers)  # 10 Angstom cutoff radius
+        nlist[index] = indices
+        offlist[index] = offsets
     time_nn_dat = time_nn.stop()
 
     print("Total:")
@@ -156,6 +164,8 @@ def run_nn(traj_file,outfile=None,width=None):
         with open(outfile,'a') as f:
             writer = csv.writer(f)
             writer.writerow(fields)
+
+    return nlist, offlist
 
 
 def run_nn_binless(traj_file,outfile=None,width=None):
@@ -178,8 +188,15 @@ def run_nn_binless(traj_file,outfile=None,width=None):
     ### Neighbor list functions ###
     print("Nearest neighbor search:")
     time_nn.start()
+    nlist = []
+    offlist = []
+    for i in range(len(atoms)):
+        nlist.append([])
+        offlist.append([])
     for index in range(len(atoms)):
-        neighbor_list(atoms,index,None,10)  # 10 Angstom cutoff radius
+        indices, offsets = neighbor_list(atoms,index,10,None,None)  # 10 Angstom cutoff radius
+        nlist[index] = indices
+        offlist[index] = offsets
     time_nn_dat = time_nn.stop()
 
     print("Total:")
@@ -194,6 +211,8 @@ def run_nn_binless(traj_file,outfile=None,width=None):
         with open(outfile,'a') as f:
             writer = csv.writer(f)
             writer.writerow(fields)
+
+    return nlist, offlist
 
 
 def run_nn_batch(traj_files,outfile,bins: bool,width=None):
