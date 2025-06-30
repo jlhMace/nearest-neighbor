@@ -84,8 +84,9 @@ def neighbor_list(atoms,index,cutoff,bin_nlist,pointers):
     '''Reads trajectory file and performs nearest neighbor algorithm
         Input:  atoms:          Atoms object of n atoms,
                 atom_index:     index of particular atom in Atoms object,
-                bin_nlist:       list of atomic indexes in neighboring bins
                 cutoff:         neighbor cutoff in Angstroms
+                bin_nlist:      list of atomic indexes in neighboring bins
+                pointers:       dict of bin_nlist[index] -> atom[index]
         Output: neighbor_atoms: Atoms object of nearby atoms'''
 
     cutoff=cutoff/2
