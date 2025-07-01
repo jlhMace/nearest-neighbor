@@ -55,7 +55,7 @@ def bin_cull(index,atoms,atom_list,list_index_by_bin,bin_num):
                 list_index_by_bin:  h*k*l nested list of atom indicies by bin coordinate
                 bin_num:            3x1 list of dimensional number  of bins in unit cell
         Output: bin_list:           list of atomic indexes in neighboring bins
-                pointers:           dict of bin_nlist[index]:atoms[index] key pairs'''
+                pointers:           dict of bin_nlist[index] -> atom[index]'''
     
     [x,y,z] = atom_list[index]
     [a,b,c] = bin_num
