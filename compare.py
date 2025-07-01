@@ -10,6 +10,8 @@ import pandas as pd
 def create_reference(trajfile,outfile):
     '''Creates neighborlist file for nearest neighbors of each atom of a trajectory using binless nearest neighbor.'''
 
+    print('Creating reference Nlist...')
+
     with open(outfile,'wb') as f:
         cutoff = 10/2
         atoms = Trajectory(trajfile)[-1]
@@ -25,11 +27,16 @@ def create_reference(trajfile,outfile):
             nlist[i].append(np.sort(indices))
             offlist[i].append(offsets)
 
-        print(nlist[0])
+        #print(nlist[0])
         pickle.dump(nlist,f)
+
+    print('Reference complete.')
+
 
 def create_neighborlist(trajfile,outfile):
     '''Creates neighborlist file for nearest neighbors of each atom of a trajectory using binless nearest neighbor.'''
+    
+    print('Creating Test Nlist...')
 
     with open(outfile,'wb') as f:
         cutoff = 10
@@ -47,18 +54,24 @@ def create_neighborlist(trajfile,outfile):
             nlist[i].append(np.sort(indices))
             offlist[i].append(offsets)
 
-        print(nlist[0])
+        #print(nlist[0])
         pickle.dump(nlist,f)
+    
+    print('Test complete.')
+
 
 def compare_files(f1,f2):
     '''Compares two files using filecmp. True if contents are the same, False if different.'''
-    return filecmp.cmp(f1,f2,shallow=False)
+    compare = filecmp.cmp(f1,f2,shallow=False)
+    print(f'Are these files the same? {compare}')
+    return compare
 
-def view_pickle(file1,file2):
+
+def view_pickle(file1,file2,index):
     f1 = pd.read_pickle(file1)
     f2 = pd.read_pickle(file2)
-    print(f1[100])
-    print(f2[100])
+    print(f1[index])
+    print(f2[index])
 
 
 def compare_nlist(trajfile,reffile,trajformat='pkl',refformat='pkl'):
@@ -87,22 +100,18 @@ def compare_nlist(trajfile,reffile,trajformat='pkl',refformat='pkl'):
 
 
 
-
-
-
 def main():
-    trajfile = 'data-trajectory-files/uniform_cubic/trajprop-10Acutoff-20A.traj'
-    outfile = 'data-testing/10Acutoff-cubic-20A.pkl'
-    outtest = 'data-testing/10Acutoff-cubic-20A_test.pkl'
+    trajfile = 'data-testing/10Acutoff-cubic-40A.traj'
+    outfile = 'data-testing/10Acutoff-cubic-40A.pkl'
+    outtest = 'data-testing/10Acutoff-cubic-40A_test.pkl'
     create_reference(trajfile,outfile)
-    print('reference ^^')
     create_neighborlist(trajfile,outtest)
-    print('nlist ^^')
-    print(compare_files(outfile,outtest))
+    compare_files(outfile,outtest)
+    #view_pickle('data-testing/10Acutoff-cubic-10A.pkl','data-testing/10Acutoff-cubic-10A_test.pkl',100)
+    #view_pickle('data-testing/10Acutoff-thin-30A.pkl','data-testing/10Acutoff-thin-30A_test.pkl',100)
+    #compare_nlist(outtest,outfile)  # Compare nonbins to bins
+    compare_nlist(outfile,outtest) # Compare bins to nonbins
     print('Done')
-    #view_pickle('data-testing/10Acutoff-cubic-10A.pkl','data-testing/10Acutoff-cubic-10A_test.pkl')
-    #view_pickle('data-testing/10Acutoff-thin-30A.pkl','data-testing/10Acutoff-thin-30A_test.pkl')
-    compare_nlist(outtest,outfile)
 
 
 if __name__=='__main__':
