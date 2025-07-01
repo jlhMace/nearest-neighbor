@@ -18,12 +18,13 @@ def create_trajectory_uniform(filename,cutoff,a,b,c,alpha=90,beta=90,gamma=90):
 
     # parameters and density check
     element = 'H'
-    num = int((a*b*c)*50/pow(cutoff,3))    # number of total atoms
+    density = 50    # atoms per bin
+    num = int((a*b*c)*density/pow(cutoff,3))    # number of total atoms
     bins = int((a*b*c)/pow(cutoff,3))
     print(num,bins,num/bins)
 
     # Creates Atom object
-    atom_list = Atoms(cell=[a,b,c,alpha,beta,gamma])
+    atom_list = Atoms(cell=[a,b,c,alpha,beta,gamma],pbc=True)
 
     # switch to degrees because ASE hates me
     alpha = radians(alpha)
@@ -67,8 +68,7 @@ def create_trajectory_uniform(filename,cutoff,a,b,c,alpha=90,beta=90,gamma=90):
 
 
 def create_custom(filename):
-    '''Creates a manually defined system'''
-
+    '''Creates a hardcoded defined system'''
     n=40-39.46785238
     atomsys = Atoms('LiHH', positions=[(13.10486985, 15.95092176, 9.01085498), (15.23491011, 16.41032859, -n), (15.23491011, 16.41032859, 39.46785238)], pbc=True, cell=[40.0, 40.0, 40.0])
 
@@ -77,7 +77,7 @@ def create_custom(filename):
     traj.close()
 
 def main():
-    create_trajectory_uniform('data-trajectory-files/uniform-monoclinic/10Acutoff-50A-50.traj',10,50,50,50,90,90,50)
+    create_trajectory_uniform('data-testing/10Acutoff-cubic-40A.traj',10,40,40,40,90,90,90)
     #create_custom('test2')
 
 
