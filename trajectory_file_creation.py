@@ -64,7 +64,7 @@ def create_trajectory_uniform(filename,cutoff,a,b,c,alpha=90,beta=90,gamma=90):
     traj = Trajectory(f'{filename}', 'w', atoms=atom_list)
     traj.write(atom_list)
     traj.close()
-    #view(atom_list)
+    view(atom_list)
 
 
 def create_custom(filename):
@@ -76,8 +76,11 @@ def create_custom(filename):
     traj.write(atomsys)
     traj.close()
 
+
+
 def main():
-    create_trajectory_uniform('data-testing/10Acutoff-cubic-40A.traj',10,40,40,40,90,90,90)
+    angle = 45
+    create_trajectory_uniform(f'data-trajectory-files/uniform_triclinic/10Acutoff-50A-doubleskew-{angle}.traj',10,50,50,50,angle,angle,90)
     #create_custom('test2')
 
 
