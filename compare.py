@@ -110,7 +110,7 @@ def main():
     #view_pickle('data-testing/10Acutoff-cubic-10A.pkl','data-testing/10Acutoff-cubic-10A_test.pkl',100)
     #view_pickle('data-testing/10Acutoff-thin-30A.pkl','data-testing/10Acutoff-thin-30A_test.pkl',100)
     #compare_nlist(outtest,outfile)  # Compare nonbins to bins
-    compare_nlist(outfile,outtest) # Compare bins to nonbins
+    compare_nlist(outfile,outtest)  # Compare bins to nonbins
     print('Done')
 
 
