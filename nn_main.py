@@ -119,6 +119,7 @@ def run_nn(traj_file,outfile=None,width=None):
     time_total = Timer("total")
     time_bin = Timer("bin")
     time_nn = Timer("nn")
+    time_lists = Timer("lists")
     print("Timing start...")
     time_total.start()
 
@@ -128,17 +129,14 @@ def run_nn(traj_file,outfile=None,width=None):
     cutoff = 10 # Angstroms
 
     ### Sorting and neighbor list functions ###
-    print("Bin sorting:")
-    time_bin.start()
     list_index_by_bin, atoms_list, bin_num = bin_sort(atoms,cutoff)
-    time_bin_dat = time_bin.stop()
 
     print('Atoms, # of bins, atoms/bin')
     n=len(atoms)
     number=bin_num[0]*bin_num[1]*bin_num[2]
     print(n,'   ',number,'     ',n/number)
 
-    print("Nearest neighbor search:")
+    print("Nearest neighbor search...")
     time_nn.start()
     nlist = []
     offlist = []
@@ -146,22 +144,35 @@ def run_nn(traj_file,outfile=None,width=None):
         nlist.append([])
         offlist.append([])
 
-    for index in range(len(atoms)):
+    for index in range(5):
+        time_bin.start()
         bin_list, pointers = bin_cull(index,atoms,atoms_list,list_index_by_bin,bin_num)
+        time_bin.stop()
+        time_nn.start()
         indices, offsets = neighbor_list(atoms,index,10,bin_list,pointers)  # 10 Angstom cutoff radius
+        time_nn_dat = time_nn.stop()
+        time_lists.start()
         nlist[index] = indices
         offlist[index] = offsets
-    time_nn_dat = time_nn.stop()
+        time_lists.stop()
 
-    print("Total:")
     time_total_dat = time_total.stop()
-
+    
+    t_bin = time_bin.return_time()
+    t_nn = time_nn.return_time()
+    t_lists = time_lists.return_time()
+    t_total = time_total.return_time()
+    print(f'Bin cull time: {t_bin}')
+    print(f'Nearest Neighbor time: {t_nn}')
+    print(f'Listing time: {t_lists}')
+    print(f'Total: {t_total}')
+    
     if outfile:
         # write to csv
         if width:
-            fields = [width,len(atoms),bin_num[0]*bin_num[1]*bin_num[2],time_bin_dat,time_nn_dat,time_total_dat]
+            fields = [width,len(atoms),bin_num[0]*bin_num[1]*bin_num[2],t_bin,time_nn_dat,t_total]
         else:
-            fields = [len(atoms),bin_num[0]*bin_num[1]*bin_num[2],time_bin_dat,time_nn_dat,time_total_dat]
+            fields = [len(atoms),bin_num[0]*bin_num[1]*bin_num[2],t_bin,t_nn,t_total]
         with open(outfile,'a') as f:
             writer = csv.writer(f)
             writer.writerow(fields)
@@ -173,8 +184,8 @@ def run_nn_binless(traj_file,outfile=None,width=None):
     '''Runs nn without bins'''
     ### Timing classes for testing ###
     time_total = Timer("total")
-    time_bin = Timer("bin")
     time_nn = Timer("nn")
+    time_lists = Timer("lists")
     print("Timing start...")
     time_total.start()
 
@@ -187,28 +198,36 @@ def run_nn_binless(traj_file,outfile=None,width=None):
     print('Atoms:',n)
 
     ### Neighbor list functions ###
-    print("Nearest neighbor search:")
-    time_nn.start()
+    print("Nearest neighbor search...")
+    
     nlist = []
     offlist = []
     for i in range(len(atoms)):
         nlist.append([])
         offlist.append([])
-    for index in range(len(atoms)):
+    for index in range(5):
+        time_nn.start()
         indices, offsets = neighbor_list(atoms,index,10,None,None)  # 10 Angstom cutoff radius
+        time_nn.stop()
+        time_lists.start()
         nlist[index] = indices
         offlist[index] = offsets
-    time_nn_dat = time_nn.stop()
+        time_lists.stop()
+    time_total.stop()
 
-    print("Total:")
-    time_total_dat = time_total.stop()
+    t_nn = time_nn.return_time()
+    t_lists = time_lists.return_time()
+    t_total = time_total.return_time()
+    print(f'Nearest Neighbor time: {t_nn}')
+    print(f'Listing time: {t_lists}')
+    print(f'Total: {t_total}')
 
     if outfile:
         # write to csv
         if width:
-            fields = [width,len(atoms),time_nn_dat,time_total_dat]
+            fields = [width,len(atoms),t_nn,t_total]
         else:
-            fields = [len(atoms),time_nn_dat,time_total_dat]
+            fields = [len(atoms),t_nn,t_total]
         with open(outfile,'a') as f:
             writer = csv.writer(f)
             writer.writerow(fields)
@@ -247,9 +266,9 @@ def run_nn_batch(traj_files,outfile,bins: bool,width=None):
 
 
 def main():
-    #run_nn('data-trajectory-files/uniform_orthorhombic/10Acutoff-thin-20A.traj','data-graphing/orthorhombic_thin_bin_2.csv',1)
-    #run_nn_binless('data-trajectory-files/uniform_orthorhombic/10Acutoff-thin-30A.traj','data-graphing/orthorhombic_thin_nobin.csv',1)
-    run_nn_batch('data-trajectory-files/uniform_orthorhombic/10Acutoff-thin2-*.traj','data-graphing/orthorhombic_thin_nobin_2.csv',False,2)
+    run_nn('data-trajectory-files/uniform_cubic/trajprop-10Acutoff-50A.traj')
+    run_nn_binless('data-trajectory-files/uniform_cubic/trajprop-10Acutoff-50A.traj')
+    #run_nn_batch('data-trajectory-files/uniform_orthorhombic/10Acutoff-thin2-*.traj','data-graphing/orthorhombic_thin_nobin_2.csv',False,2)
     #run_nn_batch('data-trajectory-files/uniform_cubic/*.traj','data-graphing/cubic_bin_2.csv',True)
     #run_nn_batch('data-trajectory-files/uniform_cubic/*.traj','data-graphing/cubic_nobin_2.csv',False)
 
