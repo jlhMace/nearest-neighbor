@@ -17,8 +17,8 @@ def plot_graph():
 
 def main():
     ## CSV to DataFrame
-    df = pd.read_csv('data-graphing/orthorhombic_thin.csv',header=0)
-    df_nb = pd.read_csv('data-graphing/orthorhombic_thin_nobin.csv',header=0)
+    df = pd.read_csv('data-graphing/orthorhombic_thin_bin_2.csv',header=0)
+    df_nb = pd.read_csv('data-graphing/orthorhombic_thin_nobin_2.csv',header=0)
 
     ## Plot graphs for bins
     df_one = df[df["width"]==1]
@@ -27,8 +27,8 @@ def main():
     bins_two = sns.regplot(data=df_two,x='atoms', y='Total elapsed time',label='20A thick, bins',color="green")
 
     ## Plot graphs for no bins
-    df_nb_one = df_nb[df["width"]==1]
-    df_nb_two = df_nb[df["width"]==2]
+    df_nb_one = df_nb[df_nb["width"]==1]
+    df_nb_two = df_nb[df_nb["width"]==2]
     bins_nb_one = sns.regplot(data=df_nb_one,x='atoms', y='Total elapsed time',label='10A thick, no bins',color="red",order=2)
     bins_nb_two = sns.regplot(data=df_nb_two,x='atoms', y='Total elapsed time',label='20A thick, no bins',color='orange',order=2)
 
@@ -52,7 +52,7 @@ def main():
     plt.xlabel('Number of atoms')
     plt.title('Computational Cost of Thin System')
     plt.legend()
-    plt.savefig('data-graphing/orthorhombic_thin.png')
+    plt.savefig('data-graphing/orthorhombic_thin_2.png')
         
 
 if __name__=='__main__':

@@ -55,7 +55,7 @@ def bin_cull(index,atoms,atom_list,list_index_by_bin,bin_num):
                 list_index_by_bin:  h*k*l nested list of atom indicies by bin coordinate
                 bin_num:            3x1 list of dimensional number  of bins in unit cell
         Output: bin_list:           list of atomic indexes in neighboring bins
-                pointers:           dict of bin_nlist[index]:atoms[index] key pairs'''
+                pointers:           dict of bin_nlist[index] -> atom[index]'''
     
     [x,y,z] = atom_list[index]
     [a,b,c] = bin_num
@@ -73,8 +73,8 @@ def bin_cull(index,atoms,atom_list,list_index_by_bin,bin_num):
                     new_atom = atoms[e]
                     bin_nlist = bin_nlist + new_atom
                     pointers[bin_nlist[counter].index] = e
-                    if e==index:
-                        print(f'{bin_nlist[counter].index}, {e}')
+                    #if e==index:
+                        #print(f'{bin_nlist[counter].index}, {e}')
                     counter+=1
     
     return bin_nlist, pointers
@@ -84,8 +84,9 @@ def neighbor_list(atoms,index,cutoff,bin_nlist,pointers):
     '''Reads trajectory file and performs nearest neighbor algorithm
         Input:  atoms:          Atoms object of n atoms,
                 atom_index:     index of particular atom in Atoms object,
-                bin_nlist:       list of atomic indexes in neighboring bins
                 cutoff:         neighbor cutoff in Angstroms
+                bin_nlist:      list of atomic indexes in neighboring bins
+                pointers:       dict of bin_nlist[index] -> atom[index]
         Output: neighbor_atoms: Atoms object of nearby atoms'''
 
     cutoff=cutoff/2
@@ -139,9 +140,17 @@ def run_nn(traj_file,outfile=None,width=None):
 
     print("Nearest neighbor search:")
     time_nn.start()
+    nlist = []
+    offlist = []
+    for i in range(len(atoms)):
+        nlist.append([])
+        offlist.append([])
+
     for index in range(len(atoms)):
-        bin_list = bin_cull(index,atoms_list,list_index_by_bin,bin_num)
-        neighbor_list(atoms,index,bin_list,10)  # 10 Angstom cutoff radius
+        bin_list, pointers = bin_cull(index,atoms,atoms_list,list_index_by_bin,bin_num)
+        indices, offsets = neighbor_list(atoms,index,10,bin_list,pointers)  # 10 Angstom cutoff radius
+        nlist[index] = indices
+        offlist[index] = offsets
     time_nn_dat = time_nn.stop()
 
     print("Total:")
@@ -156,6 +165,8 @@ def run_nn(traj_file,outfile=None,width=None):
         with open(outfile,'a') as f:
             writer = csv.writer(f)
             writer.writerow(fields)
+
+    return nlist, offlist
 
 
 def run_nn_binless(traj_file,outfile=None,width=None):
@@ -178,8 +189,15 @@ def run_nn_binless(traj_file,outfile=None,width=None):
     ### Neighbor list functions ###
     print("Nearest neighbor search:")
     time_nn.start()
+    nlist = []
+    offlist = []
+    for i in range(len(atoms)):
+        nlist.append([])
+        offlist.append([])
     for index in range(len(atoms)):
-        neighbor_list(atoms,index,None,10)  # 10 Angstom cutoff radius
+        indices, offsets = neighbor_list(atoms,index,10,None,None)  # 10 Angstom cutoff radius
+        nlist[index] = indices
+        offlist[index] = offsets
     time_nn_dat = time_nn.stop()
 
     print("Total:")
@@ -194,6 +212,8 @@ def run_nn_binless(traj_file,outfile=None,width=None):
         with open(outfile,'a') as f:
             writer = csv.writer(f)
             writer.writerow(fields)
+
+    return nlist, offlist
 
 
 def run_nn_batch(traj_files,outfile,bins: bool,width=None):
@@ -227,10 +247,11 @@ def run_nn_batch(traj_files,outfile,bins: bool,width=None):
 
 
 def main():
-    #run_nn('','')
+    #run_nn('data-trajectory-files/uniform_orthorhombic/10Acutoff-thin-20A.traj','data-graphing/orthorhombic_thin_bin_2.csv',1)
     #run_nn_binless('data-trajectory-files/uniform_orthorhombic/10Acutoff-thin-30A.traj','data-graphing/orthorhombic_thin_nobin.csv',1)
-    #run_nn_batch('data-trajectory-files/uniform_orthorhombic/10Acutoff-thin2-*.traj','data-graphing/orthorhombic_thin_nobin.csv',False,2)
-    pass
+    run_nn_batch('data-trajectory-files/uniform_orthorhombic/10Acutoff-thin2-*.traj','data-graphing/orthorhombic_thin_nobin_2.csv',False,2)
+    #run_nn_batch('data-trajectory-files/uniform_cubic/*.traj','data-graphing/cubic_bin_2.csv',True)
+    #run_nn_batch('data-trajectory-files/uniform_cubic/*.traj','data-graphing/cubic_nobin_2.csv',False)
 
 
 

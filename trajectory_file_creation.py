@@ -5,28 +5,42 @@ from ase.io.trajectory import Trajectory
 from ase import Atoms, Atom
 from random import uniform
 import numpy as np
-from math import cos,sin,sqrt,pi,radians
+from math import cos,sin,sqrt,pi,radians,degrees
+from ase.visualize import view
 
 
-def create_trajectory(filename,cutoff,a,b,c,alpha=90,beta=90,gamma=90):
+def create_trajectory_uniform(filename,cutoff,a,b,c,alpha=90,beta=90,gamma=90):
     '''Create 1-step trajectory test file of uniformly distributed hydrogen atoms
-    Input:  a,b,c               dimensions of unit cell
-            alpha,beta,gamma    angles of unit cell
-    Output: {filename}.traj     Trajectory file created at {filename}.traj'''
+            of volume based on the orthorhombic shape
+        Input:  a,b,c               dimensions of unit cell
+                alpha,beta,gamma    angles of unit cell
+        Output: {filename}.traj     Trajectory file created at {filename}.traj'''
 
     # parameters and density check
     element = 'H'
-    num = int((a*b*c)*10/pow(cutoff,3))    # number of total atoms
+    density = 50    # atoms per bin
+    num = int((a*b*c)*density/pow(cutoff,3))    # number of total atoms
     bins = int((a*b*c)/pow(cutoff,3))
     print(num,bins,num/bins)
 
     # Creates Atom object
-    atom_list = Atoms(cell=[a,b,c,alpha,beta,gamma])
+    atom_list = Atoms(cell=[a,b,c,alpha,beta,gamma],pbc=True)
 
     # switch to degrees because ASE hates me
     alpha = radians(alpha)
     beta = radians(beta)
     gamma = radians(gamma)
+
+    # define new cell lengths for parallelepiped of same volume in relation to orthorhombic
+    if alpha!=(pi/2) or beta!=(pi/2) or gamma !=(pi/2):
+        if a!=b and a!=c:
+            print(f'I haven\'t coded for uneven cell sizes yet, defaulting to a=b=c.')
+        volume = a*b*c
+        abc = sqrt((pow(volume,2)/(1 + 2*cos(alpha)*cos(beta)*cos(gamma) - cos(alpha)**2 - cos(beta)**2 -cos(gamma)**2))**(1./3.))
+        a = abc
+        b = abc
+        c = abc
+        atom_list.set_cell([a,b,c,degrees(alpha),degrees(beta),degrees(gamma)])
 
     # Transformation matrix
     cosalp = (cos(beta)*cos(gamma)-cos(alpha))/(sin(beta)*sin(gamma))
@@ -44,15 +58,17 @@ def create_trajectory(filename,cutoff,a,b,c,alpha=90,beta=90,gamma=90):
         ortho_coord = np.matmul(A,np.array([x,y,z]))
         atom_list.append(Atom(element,position=ortho_coord))
 
+    print(atom_list.cell.cellpar(),atom_list.cell.volume)
+        
     # Configures traj file
     traj = Trajectory(f'{filename}', 'w', atoms=atom_list)
     traj.write(atom_list)
     traj.close()
+    #view(atom_list)
 
 
 def create_custom(filename):
-    '''Creates a manually defined system'''
-
+    '''Creates a hardcoded defined system'''
     n=40-39.46785238
     atomsys = Atoms('LiHH', positions=[(13.10486985, 15.95092176, 9.01085498), (15.23491011, 16.41032859, -n), (15.23491011, 16.41032859, 39.46785238)], pbc=True, cell=[40.0, 40.0, 40.0])
 
@@ -60,9 +76,12 @@ def create_custom(filename):
     traj.write(atomsys)
     traj.close()
 
+
+
 def main():
-    #create_trajectory('test2',10,100,100,100,90,90,90)
-    create_custom('test2')
+    angle = 90
+    create_trajectory_uniform(f'data-trajectory-files/uniform_orthorhombic/10Acutoff-thin2-300A.traj',10,300,20,20,angle,angle,90)
+    #create_custom('test2')
 
 
 if __name__=='__main__':
