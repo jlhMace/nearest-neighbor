@@ -30,17 +30,17 @@ def create_trajectory_uniform(filename,cutoff,a,b,c,alpha=90,beta=90,gamma=90):
     alpha = radians(alpha)
     beta = radians(beta)
     gamma = radians(gamma)
-    
-    if a!=b and a!=c:
-        print(f'I haven\'t coded for uneven cell sizes yet, defaulting to a=b=c.')
 
     # define new cell lengths for parallelepiped of same volume in relation to orthorhombic
-    volume = a*b*c
-    abc = sqrt((pow(volume,2)/(1 + 2*cos(alpha)*cos(beta)*cos(gamma) - cos(alpha)**2 - cos(beta)**2 -cos(gamma)**2))**(1./3.))
-    a = abc
-    b = abc
-    c = abc
-    atom_list.set_cell([a,b,c,degrees(alpha),degrees(beta),degrees(gamma)])
+    if alpha!=(pi/2) or beta!=(pi/2) or gamma !=(pi/2):
+        if a!=b and a!=c:
+            print(f'I haven\'t coded for uneven cell sizes yet, defaulting to a=b=c.')
+        volume = a*b*c
+        abc = sqrt((pow(volume,2)/(1 + 2*cos(alpha)*cos(beta)*cos(gamma) - cos(alpha)**2 - cos(beta)**2 -cos(gamma)**2))**(1./3.))
+        a = abc
+        b = abc
+        c = abc
+        atom_list.set_cell([a,b,c,degrees(alpha),degrees(beta),degrees(gamma)])
 
     # Transformation matrix
     cosalp = (cos(beta)*cos(gamma)-cos(alpha))/(sin(beta)*sin(gamma))
@@ -64,7 +64,7 @@ def create_trajectory_uniform(filename,cutoff,a,b,c,alpha=90,beta=90,gamma=90):
     traj = Trajectory(f'{filename}', 'w', atoms=atom_list)
     traj.write(atom_list)
     traj.close()
-    view(atom_list)
+    #view(atom_list)
 
 
 def create_custom(filename):
@@ -79,8 +79,8 @@ def create_custom(filename):
 
 
 def main():
-    angle = 45
-    create_trajectory_uniform(f'data-trajectory-files/uniform_triclinic/10Acutoff-50A-doubleskew-{angle}.traj',10,50,50,50,angle,angle,90)
+    angle = 90
+    create_trajectory_uniform(f'data-trajectory-files/uniform_orthorhombic/10Acutoff-thin2-300A.traj',10,300,20,20,angle,angle,90)
     #create_custom('test2')
 
 

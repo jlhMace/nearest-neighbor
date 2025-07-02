@@ -247,10 +247,11 @@ def run_nn_batch(traj_files,outfile,bins: bool,width=None):
 
 
 def main():
-    #run_nn('','')
+    #run_nn('data-trajectory-files/uniform_orthorhombic/10Acutoff-thin-20A.traj','data-graphing/orthorhombic_thin_bin_2.csv',1)
     #run_nn_binless('data-trajectory-files/uniform_orthorhombic/10Acutoff-thin-30A.traj','data-graphing/orthorhombic_thin_nobin.csv',1)
-    #run_nn_batch('data-trajectory-files/uniform_orthorhombic/10Acutoff-thin2-*.traj','data-graphing/orthorhombic_thin_nobin.csv',False,2)
-    pass
+    run_nn_batch('data-trajectory-files/uniform_orthorhombic/10Acutoff-thin2-*.traj','data-graphing/orthorhombic_thin_nobin_2.csv',False,2)
+    #run_nn_batch('data-trajectory-files/uniform_cubic/*.traj','data-graphing/cubic_bin_2.csv',True)
+    #run_nn_batch('data-trajectory-files/uniform_cubic/*.traj','data-graphing/cubic_nobin_2.csv',False)
 
 
 
