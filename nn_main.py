@@ -170,9 +170,9 @@ def run_nn(traj_file,outfile=None,width=None):
     if outfile:
         # write to csv
         if width:
-            fields = [width,len(atoms),bin_num[0]*bin_num[1]*bin_num[2],time_bin_dat,time_nn_dat,time_total_dat]
+            fields = [width,len(atoms),bin_num[0]*bin_num[1]*bin_num[2],t_bin,time_nn_dat,time_total_dat]
         else:
-            fields = [len(atoms),bin_num[0]*bin_num[1]*bin_num[2],time_bin_dat,time_nn_dat,time_total_dat]
+            fields = [len(atoms),bin_num[0]*bin_num[1]*bin_num[2],t_bin,time_nn_dat,time_total_dat]
         with open(outfile,'a') as f:
             writer = csv.writer(f)
             writer.writerow(fields)
