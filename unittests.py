@@ -4,7 +4,7 @@ import unittest
 #import nn_main as nn
 from ase.io import Trajectory
 import re
-from comparetest import create_neighborlist, compare_files
+from compare import create_neighborlist, compare_files
 import pytest
 
 class TestReferenceFiles():
